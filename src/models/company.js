@@ -5,7 +5,7 @@ const companySchema = new mongoose.Schema({
   companyName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   mobile: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  // password: { type: String, required: true },
   companysize:{type:Number ,require :true},
   isVerified: { type: Boolean, default: false },
   emailOtp: { type: String },

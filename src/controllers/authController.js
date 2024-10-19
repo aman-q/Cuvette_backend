@@ -5,12 +5,12 @@ const { sendEmail } = require("../config/email");
 const { generateToken } = require("../utils/jwt");
 const registerCompany = async (req, res) => {
   try {
-    const { username,companyname ,email, mobile, password , companysize } = req.body;
+    const { username,companyname ,email, mobile , companysize } = req.body;
 
     const existingCompany = await Company.findOne({ email });
     if (existingCompany) return res.status(400).send("Account with this email and mobile number already exists");
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
     const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const mobileOtp =  mobile.toString().slice(-4);
     const newCompany = new Company({
@@ -19,7 +19,7 @@ const registerCompany = async (req, res) => {
       email,
       mobile,
       companysize,
-      password: hashedPassword,
+      // password: hashedPassword,
       emailOtp :emailOtp,
       mobileOtp,
     });
@@ -58,14 +58,14 @@ const verifyEmail = async (req, res) => {
         .status(200)
         .json({ message: "Email verified successfully", company });
     } else {
-      res.status(400).send("Invalid OTP");
+      res.status(400).json({message:"Invalid Otp"});
     }
   } catch (error) {
     console.error("Error verifying email:", error);
     res.status(500).send("Internal server error");
   }
 };
-  const mobileotpverify =async (req,res)=>{
+const mobileotpverify =async (req,res)=>{
     const {mobile , otp} =req.body;
   try{
     const user =await Company.findOne({mobile});
@@ -73,9 +73,10 @@ const verifyEmail = async (req, res) => {
       {
         return res.status(404).send('Company not found');
       }
-      if(user.mobileOtp === otp){
-        user.mobileOtp = null;
+      if (user.mobileOtp !== otp) {
+        return res.status(400).json({ message: 'Invalid OTP' });
       }
+      user.isVerified = true;
       await user.save();
 
       const token = generateToken(user._id);

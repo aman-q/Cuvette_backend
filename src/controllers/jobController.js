@@ -1,20 +1,15 @@
-const Job = require("../models/job"); 
+const Job = require("../models/job");
 const { sendEmail } = require("../config/email");
 
 
 const postJob = async (req, res) => {
 
   const { title, description, experienceLevel, endDate, recipient } = req.body;
-
-  if (!title || !description || !experienceLevel || !endDate || !recipient || !Array.isArray(recipient) || recipient.length === 0) {
-    return res.status(400).json({ message: "All fields are required and recipient should be a non-empty array." });
-  }
-
   try {
     const companyId = req.companyId;
     const newJob = new Job({
       companyId,
-      title,
+      title: title,
       description,
       experienceLevel,
       recipient,
@@ -76,6 +71,12 @@ const sendJobAlerts = async (jobId, candidateEmails) => {
       console.error("Job not found");
       return;
     }
+    const jobEndDate = new Date(job.endDate);
+    const formattedDate = jobEndDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
 
     const companyName = job.companyId.companyName || "Our Company";
     const logoUrl = 'https://pub-261021c7b68740ffba855a7e8a6f3c1e.r2.dev/image/download.png';
@@ -84,7 +85,7 @@ const sendJobAlerts = async (jobId, candidateEmails) => {
     const bodyTemplate = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="${logoUrl}" alt="${companyName} Logo" style="max-width: 150px;"/>
+          <img src="${logoUrl}" alt=" Cuvette Logo" style="max-width: 150px;"/>
         </div>
         <h2 style="color: #333;">Greetings from ${companyName} Team!</h2>
         <p style="color: #555;">We have a new job opening that matches your skills and interests. Here are the details:</p>
@@ -92,7 +93,7 @@ const sendJobAlerts = async (jobId, candidateEmails) => {
         <h3 style="color: #333;">Job Title: ${job.title}</h3>
         <p><strong>Description:</strong> ${job.description}</p>
         <p><strong>Experience Level Required:</strong> ${job.experienceLevel}</p>
-        <p><strong>Application Deadline:</strong> ${job.endDate}</p>
+        <p><strong>Application Deadline:</strong> ${formattedDate}</p>
 
         <p>Don't miss this opportunity! Click <a href="#" style="color: #3498db;">here</a> to learn more and apply.</p>
 
