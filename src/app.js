@@ -19,6 +19,10 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/',(req,res)=>{
+    res.send("Backend Server is Runnig ")
+})
+
 app.use("/api", routes);
 connectDB();
 
